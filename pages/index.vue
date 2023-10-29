@@ -1,30 +1,35 @@
 <template>
   <div class="flex flex-col m-auto justify-center items-center">
-    <NuxtImg
+    <!-- <NuxtImg
       crossorigin
       src="https://img.linkstarted.top/public/main-logo.png"
-      class="w-[220px] mb-6" />
+      class="w-[220px] mb-6" /> -->
     <div
-      class="mx-auto relative px-4 w-[640px] min-h-[42px] border border-[red] rounded-[24px] shadow-md">
+      class="mx-auto relative px-4 w-[640px] min-h-[42px] rounded-[24px] shadow-[0_1px_6px_0_#20212447] group group-focus:ring-2 group-focus:ring-pink-500">
       <div class="flex items-center w-[600px] h-[42px]">
         <div class="pr-2">
-          <div
+          <!-- <div
             class="flex gap-x-1 w-[22px] hover:w-auto overflow-x-hidden hover:overflow-auto transition-all">
             <Icon
-              v-for="({ icon, name, color }, index) in searchEngineList"
+              v-for="{ icon, key, color } in searchEngineList"
               class="flex-shrink-0 cursor-pointer"
               :style="{ color: color }"
               :name="icon"
               size="22px"
-              @click="switchEngine(index)" />
-          </div>
+              @click="switchEngine(key)" />
+          </div> -->
+          <Icon
+            class="flex-shrink-0 cursor-pointer text-[#1a1a1a]"
+            name="iconamoon:search-bold"
+            size="22px"
+            @click="switchEngine('google')" />
         </div>
         <input
           v-model="searchKeyWord"
           @input="getInput"
           @keyup.enter="toSearchPage"
           placeholder="想你所想"
-          class="flex-grow h-[42px] outline-none bg-transparent text-[#1a1a1a]" />
+          class="flex-grow h-[42px] outline-none bg-transparent text-[#1a1a1a] caret-pink-500" />
       </div>
       <ul
         v-if="suggestList.length"
@@ -42,47 +47,53 @@
           </NuxtLink>
         </li>
       </ul>
-      <!-- <div
-        class="ml-3 cursor-pointer"
-        @click="getGoogleSearch">
-        Google
-      </div> -->
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import type { IBaiduSuggestion } from '~/interface/suggestion';
+  import { useGlobalStore, globalStore } from '~/store/global';
+  import type { IBaiduSuggestion, ISearchEngine } from '~/interface/global';
   import fetchJsonp from 'fetch-jsonp';
+
+  const { engineKey } = useGlobalStore();
+  const { switchEngine } = globalStore();
   const searchKeyWord = ref('');
   const suggestList = ref<string[]>([]);
-  const currentEngine = ref(0);
-  const searchEngineList = ref([
+  const searchEngineList = ref<ISearchEngine[]>([
     {
-      name: 'Google',
+      key: 'google',
       color: '',
       icon: 'logos:google-icon',
       baseUrl: 'https://www.google.com/search?q=',
     },
     {
-      name: 'Bing',
+      key: 'bing',
       color: '#247ec3',
       icon: 'cib:bing',
       baseUrl: 'https://bing.com/search?q=',
     },
     {
-      name: 'Baidu',
+      key: 'baidu',
       color: '#2932e1',
       icon: 'simple-icons:baidu',
       baseUrl: 'https://www.baidu.com/s?wd=',
     },
   ]);
+  const engineKeys = ['baidu', 'google', 'bing'];
+  const currentEngineKey = ref(
+    engineKeys.includes(engineKey.value) ? engineKey.value : 'baidu'
+  );
+  const currentEngine = ref(
+    searchEngineList.value.find((item) => item.key === currentEngineKey.value)
+  );
+
   // 切换搜索引擎
-  const switchEngine = (index: number) => {
-    const cur = searchEngineList.value[0];
-    searchEngineList.value[0] = searchEngineList.value[index];
-    searchEngineList.value[index] = cur;
-  };
+  // const switchEngine = (key: string) => {
+  //   const cur = searchEngineList.value.find((item) => item.key === key);
+  //   searchEngineList.value[0] = searchEngineList.value[index];
+  //   searchEngineList.value[index] = cur;
+  // };
   // 获取百度联想数据
   const suggestionList = () => {
     fetchJsonp(`https://suggestion.baidu.com/su?wd=${searchKeyWord.value}`, {
