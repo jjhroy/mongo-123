@@ -1,6 +1,7 @@
 <template>
   <div>
-    <MdEditor v-model="text" />
+    <!-- <MdEditor v-model="text" /> -->
+    <div id="vditor" />
     <button
       @click="saveMd"
       class="bg-[red] text-[#fff]">
@@ -9,13 +10,14 @@
   </div>
 </template>
 
-<script setup>
-  import { ref } from 'vue';
+<script setup lang="ts">
   import { MdEditor } from 'md-editor-v3';
   import 'md-editor-v3/lib/style.css';
+  import Vditor from 'vditor';
+  import 'vditor/dist/index.css';
 
+  const vditor = ref<Vditor | null>(null);
   const text = ref('Hello Editor!');
-
   const saveMd = () => {
     // 要保存的字符串
     const stringData = '# 一级标题\n## 二级标题';
@@ -37,4 +39,14 @@
     // 当你结束使用某个 URL 对象之后，应该通过调用这个方法来让浏览器知道不用在内存中继续保留对这个文件的引用了。
     URL.revokeObjectURL(objectURL);
   };
+  onMounted(() => {
+    vditor.value = new Vditor('vditor', {
+      after: () => {
+        // vditor.value is a instance of Vditor now and thus can be safely used here
+        vditor.value!.setValue(
+          'Vue Composition API + Vditor + TypeScript Minimal Example'
+        );
+      },
+    });
+  });
 </script>
